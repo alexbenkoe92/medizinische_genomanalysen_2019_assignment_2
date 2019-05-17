@@ -39,25 +39,25 @@ class Assignment2:
 
         self.avg_qual = np.mean(self.avg_qual)
 
-        with open ("chr22.vcf") as fh: ## Sequencing Method
+        with open (self.file_name) as fh: ## Sequencing Method
             for line in fh:
                 if "Illumina" in line and self.seq_meth == None:
                     self.seq_meth = "Illumina"
 
 
-
-    
     def merge_chrs_into_one_vcf(self, sec_file, file_name_combo):
         '''
         Creates one VCF containing all variants of chr21 and chr22
         :return:
         '''
-        files = [self.file_name, sec_file]
-        with open(f'{file_name_combo}.vcf', 'w') as output:
-            for name in files:
-                with open(name) as current_file:
-                    for line in current_file:
-                        output.write(line)
+        vcf_22 = vcf.Reader(open(self.file_name), "r")
+        vcf_21 = vcf.Reader(open(sec_file), "r")
+        vcf_files = [vcf_21,vcf_22]
+        vcf_Writer = vcf.Writer(open(f"{file_name_combo}.vcf", "w"), vcf_21)
+
+        for i in vcf_files:
+            for record in i:
+                vcf_Writer.write_record(record)
 
         vcf_temp = vcf.Reader(open(f"{file_name_combo}.vcf", "r"))
         self.comb_var_total = 0
@@ -67,12 +67,12 @@ class Assignment2:
         print(f"\nCombined Total Number of Variants: {self.comb_var_total}")
 
 
+
     def print_summary(self):
         print(f"\nFileformat: {self.file_metadata['fileformat']}")
         print(f"\nReference Sequence: {self.chrom}")
         print(f"\nSequencing Method: {self.seq_meth}")
-        for x,i in enumerate(self.var_caller):
-            print(f"\nVariant Caller {x+1}: {i}")
+        print(f"\nVariant Caller: {self.var_caller[1]}")
         print(f"\nAverage PHRED Quality: {self.avg_qual}")
         print(f"\nTotal Number of Variants: { self.total_var}")
         print(f"\nIndel Count: {self.indel_cnt}")
@@ -83,9 +83,9 @@ class Assignment2:
 def main():
     print("Assignment 2:\n")
     print(f"\nAuthor: {__author__}")
-    assignment2 = Assignment2("chr22.vcf")
+    assignment2 = Assignment2("chr22_new.vcf")
     assignment2.print_summary()
-    assignment2.merge_chrs_into_one_vcf("chr21.vcf", "chr_21_22")
+    assignment2.merge_chrs_into_one_vcf("chr21_new.vcf", "chr_21_22")
     print("\nDone with assignment 2")
         
         
